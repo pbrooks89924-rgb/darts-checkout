@@ -41,14 +41,15 @@
     justify-content: center;
     gap: 8px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
   }
   .tab-btn {
-    padding: 10px 28px;
+    padding: 10px 22px;
     border: 2px solid var(--navy);
     background: white;
     color: var(--navy);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
     border-radius: 6px;
     transition: 0.15s;
@@ -171,15 +172,20 @@
 </head>
 <body>
 <h1>DARTS CHECKOUT MEMORY MAP</h1>
-<div class="subtitle">Checkout · first-dart target · notes</div>
+<div class="subtitle" id="page-subtitle">Checkout · first-dart target · notes</div>
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="map">Map</button>
+  <button class="tab-btn" data-tab="doublemap">Double Map</button>
   <button class="tab-btn" data-tab="quiz">Quiz</button>
 </div>
 
 <div id="map" class="panel active">
   <div id="map-content"></div>
+</div>
+
+<div id="doublemap" class="panel">
+  <div id="doublemap-content"></div>
 </div>
 
 <div id="quiz" class="panel">
@@ -288,6 +294,9 @@ function getMapTarget(num) {
   if (mapTargets[num]) return mapTargets[num];
   return lookup[num] ? lookup[num].target : "—";
 }
+function getDouble(num) {
+  return lookup[num] ? lookup[num].double : "—";
+}
 function getNotes(num) {
   return lookup[num] ? lookup[num].notes : "";
 }
@@ -299,7 +308,7 @@ function renderMap() {
     html += `<div class="category"><div class="cat-header">${cat.name}</div><table class="checkout-table">`;
     html += "<tr>";
     cat.nums.forEach(n => {
-      html += `<td class="num">${n === 1 ? "1" : n}</td>`;
+      html += `<td class="num">${n}</td>`;
     });
     html += "</tr>";
     html += "<tr>";
@@ -318,12 +327,44 @@ function renderMap() {
   container.innerHTML = html;
 }
 
+function renderDoubleMap() {
+  const container = document.getElementById("doublemap-content");
+  let html = "";
+  CATEGORIES.forEach(cat => {
+    html += `<div class="category"><div class="cat-header">${cat.name}</div><table class="checkout-table">`;
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      html += `<td class="num">${n}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const d = n === 1 ? "—" : getDouble(n);
+      html += `<td class="tgt">${d}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const note = n === 1 ? "" : getNotes(n);
+      html += `<td class="note">${note}</td>`;
+    });
+    html += "</tr></table></div>";
+  });
+  container.innerHTML = html;
+}
+
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab).classList.add("active");
+
+    const sub = document.getElementById("page-subtitle");
+    if (btn.dataset.tab === "map") sub.textContent = "Checkout · first-dart target · notes";
+    else if (btn.dataset.tab === "doublemap") sub.textContent = "Checkout · double to finish · notes";
+    else sub.textContent = "Quiz — first-dart target";
+
     if (btn.dataset.tab === "quiz" && !current) nextQuestion();
   });
 });
@@ -400,6 +441,7 @@ document.getElementById("answer").addEventListener("keydown", e => {
 });
 
 renderMap();
+renderDoubleMap();
 </script>
 </body>
 </html>
