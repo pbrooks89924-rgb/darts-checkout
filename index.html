@@ -44,12 +44,12 @@
     flex-wrap: wrap;
   }
   .tab-btn {
-    padding: 10px 22px;
+    padding: 10px 18px;
     border: 2px solid var(--navy);
     background: white;
     color: var(--navy);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     cursor: pointer;
     border-radius: 6px;
     transition: 0.15s;
@@ -99,6 +99,11 @@
   table.checkout-table .tgt {
     font-weight: 600;
     font-size: 1.05rem;
+  }
+  table.checkout-table .dbl {
+    font-weight: 600;
+    font-size: 1.05rem;
+    background: #f0f4fa;
   }
   table.checkout-table .note {
     font-size: 0.78rem;
@@ -177,6 +182,7 @@
 <div class="tabs">
   <button class="tab-btn active" data-tab="map">Map</button>
   <button class="tab-btn" data-tab="doublemap">Double Map</button>
+  <button class="tab-btn" data-tab="fullmap">Full Map</button>
   <button class="tab-btn" data-tab="quiz">Quiz</button>
 </div>
 
@@ -186,6 +192,10 @@
 
 <div id="doublemap" class="panel">
   <div id="doublemap-content"></div>
+</div>
+
+<div id="fullmap" class="panel">
+  <div id="fullmap-content"></div>
 </div>
 
 <div id="quiz" class="panel">
@@ -353,6 +363,38 @@ function renderDoubleMap() {
   container.innerHTML = html;
 }
 
+function renderFullMap() {
+  const container = document.getElementById("fullmap-content");
+  let html = "";
+  CATEGORIES.forEach(cat => {
+    html += `<div class="category"><div class="cat-header">${cat.name}</div><table class="checkout-table">`;
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      html += `<td class="num">${n}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const t = n === 1 ? "—" : getMapTarget(n);
+      html += `<td class="tgt">${t}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const d = n === 1 ? "—" : getDouble(n);
+      html += `<td class="dbl">${d}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const note = n === 1 ? "" : getNotes(n);
+      html += `<td class="note">${note}</td>`;
+    });
+    html += "</tr></table></div>";
+  });
+  container.innerHTML = html;
+}
+
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -363,6 +405,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     const sub = document.getElementById("page-subtitle");
     if (btn.dataset.tab === "map") sub.textContent = "Checkout · first-dart target · notes";
     else if (btn.dataset.tab === "doublemap") sub.textContent = "Checkout · double to finish · notes";
+    else if (btn.dataset.tab === "fullmap") sub.textContent = "Checkout · setup · double · notes";
     else sub.textContent = "Quiz — first-dart target";
 
     if (btn.dataset.tab === "quiz" && !current) nextQuestion();
@@ -442,6 +485,7 @@ document.getElementById("answer").addEventListener("keydown", e => {
 
 renderMap();
 renderDoubleMap();
+renderFullMap();
 </script>
 </body>
 </html>
