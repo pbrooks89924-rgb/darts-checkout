@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darts Checkout Memory Map & Quiz</title>
+<style>
+  :root {
+    --navy: #1e3c6e;
+    --light: #f5f8fc;
+    --border: #b4bec8;
+    --text: #142030;
+    --note: #46505f;
+    --green: #1a7f3c;
+    --red: #c0392b;
+    --bg: #fafbfc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.4;
+  }
+  h1 {
+    text-align: center;
+    color: var(--navy);
+    margin: 0 0 6px;
+    font-size: 1.8rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: #667;
+    margin: 0 0 20px;
+    font-size: 0.95rem;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    padding: 10px 28px;
+    border: 2px solid var(--navy);
+    background: white;
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--navy);
+    color: white;
+  }
+  .tab-btn:hover:not(.active) { background: #eef2f8; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .category {
+    margin: 0 auto 18px;
+    max-width: 960px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+  }
+  .cat-header {
+    background: var(--navy);
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+  }
+  table.checkout-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  table.checkout-table th,
+  table.checkout-table td {
+    border: 1px solid var(--border);
+    padding: 8px 6px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  table.checkout-table .num {
+    background: var(--light);
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  table.checkout-table .tgt {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+  table.checkout-table .note {
+    font-size: 0.78rem;
+    color: var(--note);
+    background: #fcfcfe;
+    min-height: 2.2em;
+  }
+
+  .quiz-box {
+    max-width: 520px;
+    margin: 40px auto;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 30px 28px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .quiz-prompt {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #445;
+  }
+  .checkout-display {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 10px 0 20px;
+    letter-spacing: 1px;
+  }
+  .quiz-box label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  #answer {
+    width: 70%;
+    max-width: 280px;
+    padding: 12px 14px;
+    font-size: 1.15rem;
+    border: 2px solid #ccd;
+    border-radius: 6px;
+    text-align: center;
+  }
+  #answer:focus { outline: none; border-color: var(--navy); }
+  #submit-btn, #next-btn {
+    margin-top: 16px;
+    padding: 10px 26px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #submit-btn:hover, #next-btn:hover { background: #2a4d88; }
+  #next-btn { display: none; background: #3a6; }
+  .feedback {
+    margin-top: 20px;
+    min-height: 80px;
+    font-size: 1.05rem;
+  }
+  .tick { color: var(--green); font-size: 2.4rem; font-weight: bold; }
+  .cross { color: var(--red); font-size: 2.4rem; font-weight: bold; }
+  .correct-answer { font-weight: 700; color: var(--navy); margin: 6px 0; }
+  .notes-pop { color: var(--note); font-size: 0.95rem; margin-top: 6px; }
+  .double-info { font-size: 0.9rem; color: #556; margin-top: 4px; }
+  .score-line { margin-top: 14px; font-size: 0.9rem; color: #667; }
+</style>
+</head>
+<body>
+<h1>DARTS CHECKOUT MEMORY MAP</h1>
+<div class="subtitle">Checkout · first-dart target · notes</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="map">Map</button>
+  <button class="tab-btn" data-tab="quiz">Quiz</button>
+</div>
+
+<div id="map" class="panel active">
+  <div id="map-content"></div>
+</div>
+
+<div id="quiz" class="panel">
+  <div class="quiz-box">
+    <div class="quiz-prompt">What is the first-dart target for</div>
+    <div class="checkout-display" id="checkout-num">—</div>
+    <label for="answer">Target</label>
+    <input type="text" id="answer" placeholder="e.g. 17 or 3/19 wire" autocomplete="off">
+    <br>
+    <button id="submit-btn">Check</button>
+    <button id="next-btn">Next</button>
+    <div class="feedback" id="feedback"></div>
+    <div class="score-line" id="score-line">Correct: 0 / 0</div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  [2, "—", "D1", ""],
+  [3, "1", "D1", ""],
+  [4, "—", "D2", ""],
+  [5, "1", "D2", ""],
+  [6, "—", "D3", ""],
+  [7, "3", "D2", ""],
+  [8, "—", "D4", ""],
+  [9, "1", "D4", ""],
+  [10, "—", "D5", ""],
+  [11, "3", "D4", ""],
+  [12, "—", "D6", ""],
+  [13, "11", "D1", "miss close to 8"],
+  [14, "—", "D7", ""],
+  [15, "13", "D1", "high or low is fine"],
+  [16, "—", "D8", ""],
+  [17, "13", "D2", "high or low is fine"],
+  [18, "—", "D9", "maybe waste a dart at 6/10 ?"],
+  [19, "11", "D4", "high or low is fine"],
+  [20, "—", "D10", ""],
+  [21, "19", "D1", "high or low is fine"],
+  [22, "—", "D11", ""],
+  [23, "19", "D2", "high or low is fine"],
+  [24, "—", "D12", ""],
+  [25, "17", "D4", "miss close to 3"],
+  [26, "—", "D13", "maybe waste a dart at 6/10 ?"],
+  [27, "19", "D4", "miss either side is good"],
+  [28, "—", "D14", ""],
+  [29, "17", "D6", "miss close to 3"],
+  [30, "—", "D15", "maybe waste a dart at 6/10 ?"],
+  [31, "7", "D12", "miss close to 19"],
+  [32, "—", "D16", ""],
+  [33, "17", "D8", "miss close to 3"],
+  [34, "—", "D17", ""],
+  [35, "wire of 3/19", "D16 / D8", ""],
+  [36, "—", "D18", ""],
+  [37, "17", "D10", "miss close to 3"],
+  [38, "—", "D19", "maybe waste a dart at 6/10 ?"],
+  [39, "wire of 7/19", "D16 / D10", ""],
+  [40, "—", "D20", ""],
+  [41, "17", "D12", "miss close to 3"],
+  [42, "10", "D16", "miss close to 6"],
+  [43, "3", "D20", "high or low is fine"],
+  [44, "wire of 8/16", "D18 / D14", ""],
+  [45, "13", "D16", "if 2 darts 7/19 wire"],
+  [46, "wire of 6/10", "D20 / D18", ""],
+  [47, "wire of 7/19", "D20 / D14", ""],
+  [48, "wire of 8/16", "D20 / D16", ""],
+  [49, "S9", "D20", "dont go for 17/D16!"],
+  [50, "T10", "D10", "miss close to T6"],
+  [51, "11", "D20", "dont go for 19/D16!"],
+  [52, "12", "D20", "on 2 darts: T16 / D2"],
+  [53, "13", "D20", "on 2 darts: T17 / D1"],
+  [54, "14", "D20", "on 2 darts: S18 / D18"],
+  [55, "15", "D20", ""],
+  [56, "16", "D20", "miss close to T8"],
+  [57, "17", "D20", ""],
+  [58, "18", "D20", ""],
+  [59, "19", "D20", ""],
+  [60, "20", "D20", ""]
+];
+
+const CATEGORIES = [
+  { name: "SINGLE ODDS", nums: [1,3,5,7,9] },
+  { name: "TEEN ODDS", nums: [11,13,15,17,19] },
+  { name: "20s ODDS", nums: [21,23,25,27,29] },
+  { name: "30s ODDS", nums: [31,33,35,37,39] },
+  { name: "40s ODDS", nums: [41,43,45,47,49] },
+  { name: "50s ODDS", nums: [51,53,55,57,59] },
+  { name: "40s EVENS", nums: [40,42,44,46,48] },
+  { name: "50s EVENS", nums: [50,52,54,56,58] }
+];
+
+const lookup = {};
+DATA.forEach(([c, t, d, n]) => {
+  lookup[c] = { target: t, double: d, notes: n };
+});
+
+const mapTargets = {
+  35: "3/19 wire",
+  39: "7/19 wire",
+  44: "8/16 wire",
+  46: "6/10 wire",
+  47: "7/19 wire",
+  48: "8/16 wire"
+};
+
+function getMapTarget(num) {
+  if (mapTargets[num]) return mapTargets[num];
+  return lookup[num] ? lookup[num].target : "—";
+}
+function getNotes(num) {
+  return lookup[num] ? lookup[num].notes : "";
+}
+
+function renderMap() {
+  const container = document.getElementById("map-content");
+  let html = "";
+  CATEGORIES.forEach(cat => {
+    html += `<div class="category"><div class="cat-header">${cat.name}</div><table class="checkout-table">`;
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      html += `<td class="num">${n === 1 ? "1" : n}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const t = n === 1 ? "—" : getMapTarget(n);
+      html += `<td class="tgt">${t}</td>`;
+    });
+    html += "</tr>";
+    html += "<tr>";
+    cat.nums.forEach(n => {
+      const note = n === 1 ? "" : getNotes(n);
+      html += `<td class="note">${note}</td>`;
+    });
+    html += "</tr></table></div>";
+  });
+  container.innerHTML = html;
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "quiz" && !current) nextQuestion();
+  });
+});
+
+let current = null;
+let correctCount = 0;
+let totalCount = 0;
+
+function normalize(s) {
+  return (s || "").toLowerCase().replace(/[^a-z0-9/]/g, "").trim();
+}
+
+function isCorrect(user, expected) {
+  const u = normalize(user);
+  const e = normalize(expected);
+  if (!u && e === "") return true;
+  if (u === e) return true;
+  if (e.includes("wire") || e.includes("3/19") || e.includes("7/19") || e.includes("8/16") || e.includes("6/10")) {
+    const core = e.replace("wireof", "").replace("wire", "");
+    if (u.includes(core) || core.includes(u)) return true;
+  }
+  if (/^\d+$/.test(u) && e === u) return true;
+  if (e === "s9" && (u === "s9" || u === "9" || u === "single9")) return true;
+  if (e === "t10" && (u === "t10" || u === "10" || u === "treble10")) return true;
+  if (e === "" || e === "—") {
+    return u === "" || u === "-" || u === "double" || u === "d" || u === "none";
+  }
+  return false;
+}
+
+function nextQuestion() {
+  const idx = Math.floor(Math.random() * DATA.length);
+  current = DATA[idx];
+  document.getElementById("checkout-num").textContent = current[0];
+  document.getElementById("answer").value = "";
+  document.getElementById("answer").focus();
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("submit-btn").style.display = "inline-block";
+  document.getElementById("next-btn").style.display = "none";
+}
+
+function checkAnswer() {
+  if (!current) return;
+  const user = document.getElementById("answer").value;
+  const [num, target, dbl, notes] = current;
+  const ok = isCorrect(user, target);
+  totalCount++;
+  if (ok) correctCount++;
+
+  const fb = document.getElementById("feedback");
+  if (ok) {
+    fb.innerHTML = `<div class="tick">✓</div>
+      <div class="correct-answer">Correct: ${target}</div>
+      ${notes ? `<div class="notes-pop">${notes}</div>` : ""}
+      <div class="double-info">Then ${dbl}</div>`;
+  } else {
+    fb.innerHTML = `<div class="cross">✗</div>
+      <div class="correct-answer">Correct: ${target}</div>
+      ${notes ? `<div class="notes-pop">${notes}</div>` : ""}
+      <div class="double-info">Then ${dbl}</div>`;
+  }
+  document.getElementById("score-line").textContent = `Correct: ${correctCount} / ${totalCount}`;
+  document.getElementById("submit-btn").style.display = "none";
+  document.getElementById("next-btn").style.display = "inline-block";
+}
+
+document.getElementById("submit-btn").addEventListener("click", checkAnswer);
+document.getElementById("next-btn").addEventListener("click", nextQuestion);
+document.getElementById("answer").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    if (document.getElementById("next-btn").style.display !== "none") nextQuestion();
+    else checkAnswer();
+  }
+});
+
+renderMap();
+</script>
+</body>
+</html>
